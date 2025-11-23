@@ -1,73 +1,85 @@
-# React + TypeScript + Vite
+# 👶 Gender Reveal Interactive App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Una aplicación web interactiva diseñada para llevar las revelaciones de
+género al siguiente nivel. Olvídate de los videos simples; este proyecto
+ofrece una **experiencia en tiempo real** con suspenso, efectos de
+sonido y una narrativa de "Falla del Sistema" para sorprender a los
+invitados.
 
-Currently, two official plugins are available:
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind
+CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Características Principales
 
-## React Compiler
+-   **🎬 Narrativa Interactiva:**
+    -   Pantalla de espera ("¿Están listos?").
+    -   Cuenta regresiva dramática sincronizada.
+-   **⚠️ Modo "Prank" (Broma):**
+    -   Simulación de terminal de hacker y análisis de ADN.
+    -   Efecto de "Error del Sistema" (Glitch) para generar tensión
+        antes del final.
+-   **🎉 Revelación Dinámica:**
+    -   Explosión de confeti.
+    -   Cambio de tema de colores (Rosa/Azul) automático.
+    -   Mensaje personalizado.
+-   **🔊 Diseño de Sonido (Audio Sync):**
+    -   Redoble de tambores durante el conteo.
+    -   Sonido de error/glitch en el momento de tensión.
+    -   Música de celebración triunfal al revelar.
+-   **📱 UX Avanzada:**
+    -   Botón de **Pantalla Completa** para TVs y proyectores.
+    -   Botón de **"Repetir Emoción"** para reiniciar la experiencia sin
+        recargar la página.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tecnologías Utilizadas
 
-## Expanding the ESLint configuration
+-   **Core:** React 18 + Vite
+-   **Lenguaje:** TypeScript
+-   **Estilos:** Tailwind CSS v4
+-   **Animaciones:** Framer Motion
+-   **Efectos:** React Confetti
+-   **Despliegue:** Vercel
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Instalación y Uso Local
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1.  **Clonar el repositorio:**
+    `bash     git clone https://github.com/waynergt/revelacion.git     cd revelacion`
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2.  **Instalar dependencias:** `bash     npm install`
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+3.  **Ejecutar servidor de desarrollo:** `bash     npm run dev`
+
+4.  **Archivos de Audio:** Asegúrate de que la carpeta `/public/sounds/`
+    contenga:
+
+    -   `drumroll.mp3`
+    -   `glitch.mp3`
+    -   `celebration.mp3`
+
+## ⚙️ Configuración (Niño vs Niña)
+
+Para cambiar el resultado de la revelación, edita:
+
+``` ts
+const IS_BOY = false; // false = NIÑA 👧 | true = NIÑO 👦
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Este valor controla: - Colores (Rosa/Azul) - Mensaje ("Princesa" vs
+"Campeón") - Color del confeti - Emojis
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 📂 Estructura del Proyecto
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+    /public
+      /sounds        # Archivos de audio (mp3)
+    /src
+      /components    # GenderReveal.tsx
+      App.tsx
+      main.tsx
+
+## ✒️ Autor
+
+**Wayner Lopez**\
+GitHub: https://github.com/waynergt
