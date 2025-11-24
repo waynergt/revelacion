@@ -42,7 +42,6 @@ export default function GenderReveal() {
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Referencias de audio
   const drumRollRef = useRef<HTMLAudioElement | null>(null);
   const celebrationRef = useRef<HTMLAudioElement | null>(null);
   const glitchRef = useRef<HTMLAudioElement | null>(null); 
@@ -52,7 +51,6 @@ export default function GenderReveal() {
     celebrationRef.current = new Audio('/sounds/celebration.mp3');
     glitchRef.current = new Audio('/sounds/glitch.mp3'); 
 
-    // Volumen inicial
     if (drumRollRef.current) drumRollRef.current.volume = 0.7; 
     if (celebrationRef.current) celebrationRef.current.volume = 1.0; 
     if (glitchRef.current) glitchRef.current.volume = 0.8;
@@ -68,27 +66,36 @@ export default function GenderReveal() {
     };
   }, []);
 
-  // --- FUNCIÓN CRÍTICA PARA MÓVILES ---
-  // Esto desbloquea el contexto de audio en iOS/Android al hacer el primer clic
+  // --- CORRECCIÓN 1: Solo desbloqueamos Glitch y Celebración ---
+  // El redoblante NO lo tocamos aquí para evitar silenciarlo por accidente
   const unlockAudioContext = () => {
-    const audios = [drumRollRef.current, celebrationRef.current, glitchRef.current];
+    const audios = [celebrationRef.current, glitchRef.current];
+    
     audios.forEach(audio => {
       if (audio) {
-        audio.muted = true; // Silenciar para el "pre-calentamiento"
+        audio.muted = true;
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
             audio.pause();
             audio.currentTime = 0;
-            audio.muted = false; // Quitar silencio para cuando toque sonar de verdad
+            audio.muted = false;
           }).catch(() => {});
         }
       }
     });
   };
 
+  // --- CORRECCIÓN 2: Reproducir redoblante AQUÍ mismo ---
   const handleStart = () => {
-    unlockAudioContext(); // <--- Desbloqueo aquí
+    unlockAudioContext(); 
+    
+    // Fuerza bruta: Reproducir el redoblante inmediatamente al hacer clic
+    if (drumRollRef.current) {
+      drumRollRef.current.currentTime = 0;
+      drumRollRef.current.play().catch(e => console.log("Error drumroll start:", e));
+    }
+    
     setStatus('counting');
   };
 
@@ -120,10 +127,11 @@ export default function GenderReveal() {
 
   // --- ORQUESTADOR DE AUDIOS ---
   useEffect(() => {
-    if (status === 'counting') {
-      drumRollRef.current?.play().catch(() => {});
-    } 
-    else if (status === 'analyzing') {
+    // NOTA: Ya no iniciamos el redoblante aquí, porque lo iniciamos en handleStart
+    // Solo nos encargamos de DETENERLO cuando cambie el estado.
+    
+    if (status === 'analyzing') {
+       // Detener tambores
        if (drumRollRef.current) {
          drumRollRef.current.pause();
          drumRollRef.current.currentTime = 0;
@@ -174,7 +182,6 @@ export default function GenderReveal() {
   return (
     <div className={`min-h-screen w-full flex flex-col items-center justify-center overflow-hidden transition-colors duration-500 bg-linear-to-br ${bgClass}`}>
       
-      {/* Botón Pantalla Completa */}
       <button 
         onClick={toggleFullscreen}
         className={`absolute top-4 right-4 p-2 transition-colors z-50 cursor-pointer ${status === 'analyzing' ? 'text-green-500' : 'text-slate-400'}`}
@@ -212,7 +219,6 @@ export default function GenderReveal() {
               <h1 className="text-4xl md:text-6xl font-bold text-slate-700 tracking-tight">
                 ¿Están listos?
               </h1>
-              {/* BOTÓN DE INICIO CON DESBLOQUEO DE AUDIO */}
               <button
                 onClick={handleStart}
                 className="px-8 py-4 bg-slate-900 text-white font-semibold rounded-full shadow-lg hover:scale-105 transition-all cursor-pointer"
