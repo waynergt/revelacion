@@ -51,9 +51,12 @@ export default function GenderReveal() {
     celebrationRef.current = new Audio('/sounds/celebration.mp3');
     glitchRef.current = new Audio('/sounds/glitch.mp3'); 
 
+    // Configuramos volumen inicial, PERO dejamos los efectos secundarios en silencio por seguridad
     if (drumRollRef.current) drumRollRef.current.volume = 0.7; 
-    if (celebrationRef.current) celebrationRef.current.volume = 1.0; 
-    if (glitchRef.current) glitchRef.current.volume = 0.8;
+    
+    // Estos dos empezarán mudos para evitar fugas de sonido al desbloquear
+    if (celebrationRef.current) { celebrationRef.current.volume = 0; celebrationRef.current.muted = true; }
+    if (glitchRef.current) { glitchRef.current.volume = 0; glitchRef.current.muted = true; }
 
     const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener('resize', handleResize);
@@ -66,34 +69,36 @@ export default function GenderReveal() {
     };
   }, []);
 
-  // --- CORRECCIÓN 1: Solo desbloqueamos Glitch y Celebración ---
-  // El redoblante NO lo tocamos aquí para evitar silenciarlo por accidente
+  // --- CORRECCIÓN: Desbloqueo Silencioso ---
   const unlockAudioContext = () => {
     const audios = [celebrationRef.current, glitchRef.current];
     
     audios.forEach(audio => {
       if (audio) {
-        audio.muted = true;
+        // Nos aseguramos de que esté mudo
+        audio.muted = true; 
+        audio.volume = 0;
+        
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
             audio.pause();
             audio.currentTime = 0;
-            audio.muted = false;
+            // ¡OJO! NO le quitamos el silencio aquí. 
+            // Lo dejaremos mudo hasta que realmente lo necesitemos.
           }).catch(() => {});
         }
       }
     });
   };
 
-  // --- CORRECCIÓN 2: Reproducir redoblante AQUÍ mismo ---
   const handleStart = () => {
     unlockAudioContext(); 
     
-    // Fuerza bruta: Reproducir el redoblante inmediatamente al hacer clic
+    // El redoblante SÍ suena de inmediato
     if (drumRollRef.current) {
       drumRollRef.current.currentTime = 0;
-      drumRollRef.current.play().catch(e => console.log("Error drumroll start:", e));
+      drumRollRef.current.play().catch(e => console.log("Error drumroll:", e));
     }
     
     setStatus('counting');
@@ -104,6 +109,11 @@ export default function GenderReveal() {
       if (ref.current) {
         ref.current.pause();
         ref.current.currentTime = 0;
+        // Al resetear, volvemos a silenciarlos por si acaso
+        if (ref !== drumRollRef) {
+            ref.current.muted = true;
+            ref.current.volume = 0;
+        }
       }
     });
     
@@ -125,11 +135,8 @@ export default function GenderReveal() {
     }
   };
 
-  // --- ORQUESTADOR DE AUDIOS ---
+  // --- ORQUESTADOR DE AUDIOS (Aquí es donde devolvemos el volumen) ---
   useEffect(() => {
-    // NOTA: Ya no iniciamos el redoblante aquí, porque lo iniciamos en handleStart
-    // Solo nos encargamos de DETENERLO cuando cambie el estado.
-    
     if (status === 'analyzing') {
        // Detener tambores
        if (drumRollRef.current) {
@@ -138,8 +145,19 @@ export default function GenderReveal() {
        }
     }
     else if (status === 'revealed') {
-      glitchRef.current?.pause();
-      celebrationRef.current?.play().catch(() => {});
+      // Detener glitch
+      if (glitchRef.current) {
+          glitchRef.current.pause();
+      }
+
+      // Reproducir Celebración
+      if (celebrationRef.current) {
+        // AHORA SÍ: Le devolvemos la voz justo antes de sonar
+        celebrationRef.current.muted = false;
+        celebrationRef.current.volume = 1.0;
+        celebrationRef.current.currentTime = 0;
+        celebrationRef.current.play().catch(() => {});
+      }
     }
   }, [status]);
 
@@ -163,7 +181,14 @@ export default function GenderReveal() {
       } else if (loadingPercent === 99 && !isError) {
         timer = setTimeout(() => {
           setIsError(true);
-          glitchRef.current?.play().catch(() => {}); 
+          
+          // Activar sonido GLITCH aquí
+          if (glitchRef.current) {
+            glitchRef.current.muted = false;
+            glitchRef.current.volume = 0.8;
+            glitchRef.current.play().catch(() => {});
+          }
+
         }, 500);
       } else if (isError) {
         timer = setTimeout(() => setStatus('revealed'), 2500);
