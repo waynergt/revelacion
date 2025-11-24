@@ -3,7 +3,7 @@ import Confetti from 'react-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- CONFIGURACIÓN ---
-const IS_BOY = false; // NIÑA 👧
+const IS_BOY = false; // false = NIÑA 👧 | true = NIÑO 👦
 
 const THEME = {
   boy: {
@@ -42,6 +42,7 @@ export default function GenderReveal() {
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Referencias de audio
   const drumRollRef = useRef<HTMLAudioElement | null>(null);
   const celebrationRef = useRef<HTMLAudioElement | null>(null);
   const glitchRef = useRef<HTMLAudioElement | null>(null); 
@@ -51,6 +52,7 @@ export default function GenderReveal() {
     celebrationRef.current = new Audio('/sounds/celebration.mp3');
     glitchRef.current = new Audio('/sounds/glitch.mp3'); 
 
+    // Volumen inicial
     if (drumRollRef.current) drumRollRef.current.volume = 0.7; 
     if (celebrationRef.current) celebrationRef.current.volume = 1.0; 
     if (glitchRef.current) glitchRef.current.volume = 0.8;
@@ -65,6 +67,30 @@ export default function GenderReveal() {
       glitchRef.current?.pause();
     };
   }, []);
+
+  // --- FUNCIÓN CRÍTICA PARA MÓVILES ---
+  // Esto desbloquea el contexto de audio en iOS/Android al hacer el primer clic
+  const unlockAudioContext = () => {
+    const audios = [drumRollRef.current, celebrationRef.current, glitchRef.current];
+    audios.forEach(audio => {
+      if (audio) {
+        audio.muted = true; // Silenciar para el "pre-calentamiento"
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.muted = false; // Quitar silencio para cuando toque sonar de verdad
+          }).catch(() => {});
+        }
+      }
+    });
+  };
+
+  const handleStart = () => {
+    unlockAudioContext(); // <--- Desbloqueo aquí
+    setStatus('counting');
+  };
 
   const handleReset = () => {
     [drumRollRef, celebrationRef, glitchRef].forEach(ref => {
@@ -82,11 +108,11 @@ export default function GenderReveal() {
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
+      document.documentElement.requestFullscreen().catch(() => {});
       setIsFullscreen(true);
     } else {
       if (document.exitFullscreen) {
-        document.exitFullscreen();
+        document.exitFullscreen().catch(() => {});
         setIsFullscreen(false);
       }
     }
@@ -148,6 +174,7 @@ export default function GenderReveal() {
   return (
     <div className={`min-h-screen w-full flex flex-col items-center justify-center overflow-hidden transition-colors duration-500 bg-linear-to-br ${bgClass}`}>
       
+      {/* Botón Pantalla Completa */}
       <button 
         onClick={toggleFullscreen}
         className={`absolute top-4 right-4 p-2 transition-colors z-50 cursor-pointer ${status === 'analyzing' ? 'text-green-500' : 'text-slate-400'}`}
@@ -185,8 +212,9 @@ export default function GenderReveal() {
               <h1 className="text-4xl md:text-6xl font-bold text-slate-700 tracking-tight">
                 ¿Están listos?
               </h1>
+              {/* BOTÓN DE INICIO CON DESBLOQUEO DE AUDIO */}
               <button
-                onClick={() => setStatus('counting')}
+                onClick={handleStart}
                 className="px-8 py-4 bg-slate-900 text-white font-semibold rounded-full shadow-lg hover:scale-105 transition-all cursor-pointer"
               >
                 Iniciar Protocolo
@@ -267,7 +295,7 @@ export default function GenderReveal() {
               <h1 className={`text-6xl md:text-8xl font-black ${resultTheme.color} drop-shadow-lg`}>
                 {resultTheme.message}
               </h1>
-              <p className="text-slate-800 text-2xl font-bold">¡Bienvenida Princesa!</p>
+              <p className="text-slate-800 text-2xl font-bold">¡Bienvenida!</p>
               
               <motion.div 
                 initial={{ opacity: 0 }}
@@ -275,7 +303,6 @@ export default function GenderReveal() {
                 transition={{ delay: 3 }}
                 className="pt-8 flex justify-center"
               >
-                {/* BOTÓN ACTUALIZADO A TU GUSTO */}
                 <button 
                   onClick={handleReset}
                   className={`px-6 py-2 ${resultTheme.button} text-white rounded-full font-medium shadow-lg hover:scale-105 transition-all cursor-pointer flex items-center gap-2`}
