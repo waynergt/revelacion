@@ -267,7 +267,7 @@ export default function GenderReveal() {
               <h1 className={`text-6xl md:text-8xl font-black ${resultTheme.color} drop-shadow-lg`}>
                 {resultTheme.message}
               </h1>
-              <p className="text-slate-800 text-2xl font-bold">¡Bienvenida!</p>
+              <p className="text-slate-800 text-2xl font-bold">¡Bienvenida Princesa!</p>
               
               <motion.div 
                 initial={{ opacity: 0 }}
